@@ -6,9 +6,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Stand-in for a repository / backend.
- * The talk's point: UI patterns sit ON TOP of this; the service knows
- * nothing about JavaFX or the View.
+ * Dummy repository / backend.
+ * The talk's point: UI patterns sit ON TOP of this; the service knows nothing about JavaFX or the View.
  */
 public class PersonService {
 
@@ -21,10 +20,6 @@ public class PersonService {
 
     public List<Person> loadAll() {
         return storage;
-    }
-
-    public Person load(UUID uid) {
-        return storage.stream().filter(p -> Objects.equals(p.getUid(), uid)).findFirst().orElse(null);
     }
 
     public void save(Person person) {

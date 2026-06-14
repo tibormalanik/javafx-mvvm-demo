@@ -9,10 +9,10 @@ cd javafx-mvvm-demo
 mvn javafx:run
 ```
 
-Requires JDK 21 on your `PATH` (or set `JAVA_HOME`). On macOS with Homebrew:
+Requires JDK 25 on your `PATH` (or set `JAVA_HOME`). On macOS with Homebrew:
 
 ```bash
-export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export JAVA_HOME="$(brew --prefix openjdk@25)/libexec/openjdk.jdk/Contents/Home"
 export PATH="$JAVA_HOME/bin:$PATH"
 ```
 
@@ -24,5 +24,5 @@ mvn clean compile
 
 ## Requirements
 
-- JDK 21
+- JDK 25
 - Maven 3.9+
