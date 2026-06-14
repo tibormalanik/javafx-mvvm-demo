@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -27,7 +28,11 @@ import java.util.regex.Pattern;
  */
 public class PersonViewModel {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+    // Pragmatic email check: one @ with non-empty, dotted domain. The bounded
+    // {2,} TLD and lack of nested quantifiers keep it ReDoS-safe, while no
+    // longer rejecting valid long TLDs (.museum, .software, ...).
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private final PersonService service;
 
@@ -45,9 +50,9 @@ public class PersonViewModel {
     private final Runnable onLeave;
 
     public PersonViewModel(PersonService service, Person person, Runnable onLeave) {
-        this.service = service;
-        this.personToEdit = person;
-        this.onLeave = onLeave;
+        this.service = Objects.requireNonNull(service, "service");
+        this.personToEdit = person; // null means "create new"
+        this.onLeave = Objects.requireNonNull(onLeave, "onLeave");
 
         // save is disabled unless the form is valid.
         validationMessage.bind(Bindings.createStringBinding(this::validate, firstName, lastName, email));
@@ -63,9 +68,9 @@ public class PersonViewModel {
         }
         service.save(new Person(
                 personToEdit != null ? personToEdit.getUid() : null,
-                firstName.get().trim(),
-                lastName.get().trim(),
-                email.get() != null ? email.get().trim() : null)
+                safeTrim(firstName.get()),
+                safeTrim(lastName.get()),
+                emptyToNull(safeTrim(email.get())))
         );
         onLeave.run();
     }
@@ -96,23 +101,35 @@ public class PersonViewModel {
     }
 
     private String validate() {
-        if (firstName.get().trim().isEmpty()){
+        if (safeTrim(firstName.get()).isEmpty()) {
             return "First name is required";
         }
-        if (lastName.get().trim().isEmpty()) {
+        if (safeTrim(lastName.get()).isEmpty()) {
             return "Last name is required";
         }
-        if (email.get() != null && !email.get().trim().isEmpty() && !EMAIL_PATTERN.matcher(email.get().trim()).matches()) {
+        String trimmedEmail = safeTrim(email.get());
+        if (!trimmedEmail.isEmpty() && !EMAIL_PATTERN.matcher(trimmedEmail).matches()) {
             return "E-mail is invalid";
         }
         return null;
     }
 
+    /** Null-safe trim: a null property value behaves like an empty string. */
+    private static String safeTrim(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private static String emptyToNull(String value) {
+        return value.isEmpty() ? null : value;
+    }
+
     private void fill() {
         if (personToEdit != null) {
-            firstName.set(personToEdit.getFirstName());
-            lastName.set(personToEdit.getLastName());
-            email.set(personToEdit.getEmail());
+            // Service fields may be null; normalise to empty so the bound
+            // TextFields and validation never see a null String.
+            firstName.set(safeTrim(personToEdit.getFirstName()));
+            lastName.set(safeTrim(personToEdit.getLastName()));
+            email.set(safeTrim(personToEdit.getEmail()));
         } else {
             firstName.set("");
             lastName.set("");
