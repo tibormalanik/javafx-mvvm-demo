@@ -8,6 +8,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 
 /**
@@ -30,6 +32,7 @@ public class PersonViewModel {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
 
     private final PersonService service;
+    private final Executor uiExecutor;
 
     // --- editable state, exposed as Properties to view ---
     private final StringProperty firstName = new SimpleStringProperty("");
@@ -44,10 +47,11 @@ public class PersonViewModel {
 
     private final Runnable onLeave;
 
-    public PersonViewModel(PersonService service, Person person, Runnable onLeave) {
+    public PersonViewModel(PersonService service, Person person, Runnable onLeave, Executor uiExecutor) {
         this.service = service;
         this.personToEdit = person;
         this.onLeave = onLeave;
+        this.uiExecutor = uiExecutor;
 
         // save is disabled unless the form is valid.
         validationMessage.bind(Bindings.createStringBinding(this::validate, firstName, lastName, email));
@@ -57,17 +61,18 @@ public class PersonViewModel {
     }
 
     // --- commands the view invokes
-    public void save() {
+    public CompletableFuture<Void> save() {
         if (validate() != null) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
-        service.save(new Person(
-                personToEdit != null ? personToEdit.getUid() : null,
-                firstName.get().trim(),
-                lastName.get().trim(),
-                email.get() != null ? email.get().trim() : null)
-        );
-        onLeave.run();
+        return CompletableFuture.runAsync(() -> {
+            service.save(new Person(
+                    personToEdit != null ? personToEdit.uid() : null,
+                    firstName.get().trim(),
+                    lastName.get().trim(),
+                    email.get() != null ? email.get().trim() : null)
+            );
+        }).thenRunAsync(onLeave, uiExecutor);
     }
 
     public void cancel() {
@@ -96,10 +101,10 @@ public class PersonViewModel {
     }
 
     private String validate() {
-        if (firstName.get().trim().isEmpty()){
+        if (firstName.get() == null || firstName.get().trim().isEmpty()){
             return "First name is required";
         }
-        if (lastName.get().trim().isEmpty()) {
+        if (firstName.get() == null || lastName.get().trim().isEmpty()) {
             return "Last name is required";
         }
         if (email.get() != null && !email.get().trim().isEmpty() && !EMAIL_PATTERN.matcher(email.get().trim()).matches()) {
@@ -110,9 +115,9 @@ public class PersonViewModel {
 
     private void fill() {
         if (personToEdit != null) {
-            firstName.set(personToEdit.getFirstName());
-            lastName.set(personToEdit.getLastName());
-            email.set(personToEdit.getEmail());
+            firstName.set(personToEdit.firstName());
+            lastName.set(personToEdit.lastName());
+            email.set(personToEdit.email());
         } else {
             firstName.set("");
             lastName.set("");

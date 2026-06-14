@@ -1,5 +1,7 @@
 package com.example.mvvm.service;
 
+import javafx.application.Platform;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,18 +21,20 @@ public class PersonService {
     }
 
     public List<Person> loadAll() {
+        checkThread();
         return storage;
     }
 
     public void save(Person person) {
-        if (person.getUid() == null) {
-            person.setUid(UUID.randomUUID());
-            System.out.println("[PersonService] insert: " + person);
-            storage.add(person);
+        checkThread();
+        if (person.uid() == null) {
+            var toSave = new Person(UUID.randomUUID(), person.firstName(), person.lastName(), person.email());
+            System.out.println("[PersonService] insert: " + toSave);
+            storage.add(toSave);
         } else {
             System.out.println("[PersonService] update: " + person);
             storage.replaceAll(p ->
-                    Objects.equals(p.getUid(), person.getUid())
+                    Objects.equals(p.uid(), person.uid())
                             ? person
                             : p
             );
@@ -38,7 +42,14 @@ public class PersonService {
     }
 
     public void delete(Person person) {
+        checkThread();
         System.out.println("[PersonService] delete: " + person);
-        storage.removeIf(p -> Objects.equals(p.getUid(), person.getUid()));
+        storage.removeIf(p -> Objects.equals(p.uid(), person.uid()));
+    }
+
+    private void checkThread() {
+        if (Platform.isFxApplicationThread()) {
+            throw new IllegalStateException("Should be invoked on the FX thread");
+        }
     }
 }

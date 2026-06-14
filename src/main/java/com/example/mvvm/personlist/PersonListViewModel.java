@@ -6,18 +6,22 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 public class PersonListViewModel {
 
     private final PersonService service;
+    private final Executor uiExecutor;
 
     private Consumer<Person> openPerson;
 
     private final ListProperty<Person> persons = new SimpleListProperty<>(FXCollections.observableArrayList());
 
-    public PersonListViewModel(PersonService service) {
+    public PersonListViewModel(PersonService service, Executor uiExecutor) {
         this.service = service;
+        this.uiExecutor = uiExecutor;
         fill();
     }
 
@@ -30,7 +34,9 @@ public class PersonListViewModel {
     }
 
     private void fill() {
-        persons.set(FXCollections.observableArrayList(service.loadAll()));
+        CompletableFuture.supplyAsync(service::loadAll).thenAcceptAsync(personList -> {
+            persons.set(FXCollections.observableArrayList(personList));
+        }, uiExecutor);
     }
 
     public ListProperty<Person> persons() {
@@ -46,8 +52,10 @@ public class PersonListViewModel {
     }
 
     public void delete(Person person) {
-        service.delete(person);
-        fill();
+        CompletableFuture.runAsync(() -> {
+            service.delete(person);
+            fill();
+        });
     }
 
 }

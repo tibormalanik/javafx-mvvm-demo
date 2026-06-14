@@ -31,7 +31,7 @@ public class PersonViewModelTest {
         Runnable onLeave = Mockito.mock(Runnable.class);
 
         // when
-        underTest = new PersonViewModel(personService, null, onLeave);
+        underTest = new PersonViewModel(personService, null, onLeave, Runnable::run);
 
         // then
         assertThat(underTest.saveDisabledProperty().get()).isTrue();
@@ -40,13 +40,13 @@ public class PersonViewModelTest {
         underTest.firstNameProperty().setValue("firstName");
         underTest.lastNameProperty().setValue("lastName");
         underTest.emailProperty().setValue("f@l.de");
-        underTest.save();
+        underTest.save().join();
 
         // then
         Mockito.verify(personService).save(captorPerson.capture());
-        assertThat(captorPerson.getValue().getFirstName()).isEqualTo("firstName");
-        assertThat(captorPerson.getValue().getLastName()).isEqualTo("lastName");
-        assertThat(captorPerson.getValue().getEmail()).isEqualTo("f@l.de");
+        assertThat(captorPerson.getValue().firstName()).isEqualTo("firstName");
+        assertThat(captorPerson.getValue().lastName()).isEqualTo("lastName");
+        assertThat(captorPerson.getValue().email()).isEqualTo("f@l.de");
         Mockito.verify(onLeave).run();
     }
 
@@ -57,7 +57,7 @@ public class PersonViewModelTest {
         var person = new Person(UUID.randomUUID(), "John", "Doe", null);
 
         // when
-        underTest = new PersonViewModel(personService, person, onLeave);
+        underTest = new PersonViewModel(personService, person, onLeave, Runnable::run);
 
         // then
         assertThat(underTest.saveDisabledProperty().get()).isFalse();
@@ -67,9 +67,9 @@ public class PersonViewModelTest {
 
         // then
         Mockito.verify(personService).save(captorPerson.capture());
-        assertThat(captorPerson.getValue().getFirstName()).isEqualTo("John");
-        assertThat(captorPerson.getValue().getLastName()).isEqualTo("Doe");
-        assertThat(captorPerson.getValue().getEmail()).isNullOrEmpty();
+        assertThat(captorPerson.getValue().firstName()).isEqualTo("John");
+        assertThat(captorPerson.getValue().lastName()).isEqualTo("Doe");
+        assertThat(captorPerson.getValue().email()).isNullOrEmpty();
         Mockito.verify(onLeave).run();
     }
 
@@ -77,7 +77,7 @@ public class PersonViewModelTest {
     public void testCancel() {
         // given
         Runnable onLeave = Mockito.mock(Runnable.class);
-        underTest = new PersonViewModel(personService, null, onLeave);
+        underTest = new PersonViewModel(personService, null, onLeave, Runnable::run);
 
         // when
         underTest.cancel();
@@ -94,7 +94,7 @@ public class PersonViewModelTest {
         Runnable onLeave = Mockito.mock(Runnable.class);
 
         // when
-        underTest = new PersonViewModel(personService, null, onLeave);
+        underTest = new PersonViewModel(personService, null, onLeave, Runnable::run);
 
         // then
         assertThat(underTest.saveDisabledProperty().get()).isTrue();

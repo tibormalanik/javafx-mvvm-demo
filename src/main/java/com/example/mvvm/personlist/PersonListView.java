@@ -1,6 +1,7 @@
 package com.example.mvvm.personlist;
 
 import com.example.mvvm.service.Person;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -31,11 +32,12 @@ public class PersonListView extends VBox {
         TableColumn<Person, String> firstName = new TableColumn<>("First name");
         firstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         firstName.setPrefWidth(150);
+        firstName.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().firstName()));
         TableColumn<Person, String> lastName = new TableColumn<>("Last name");
-        lastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        lastName.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().lastName()));
         lastName.setPrefWidth(150);
         TableColumn<Person, String> email = new TableColumn<>("E-mail");
-        email.setCellValueFactory(new PropertyValueFactory<>("email"));
+        email.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().email()));
         email.setPrefWidth(218);
         tableView.getColumns().addAll(List.of(firstName, lastName, email));
 

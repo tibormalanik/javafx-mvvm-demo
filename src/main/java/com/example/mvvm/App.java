@@ -6,6 +6,7 @@ import com.example.mvvm.personlist.PersonListView;
 import com.example.mvvm.personlist.PersonListViewModel;
 import com.example.mvvm.service.PersonService;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -21,13 +22,13 @@ public class App extends Application {
         BorderPane root = new BorderPane();
         root.setTop(header());
 
-        PersonListViewModel listViewModel = new PersonListViewModel(personService);
+        PersonListViewModel listViewModel = new PersonListViewModel(personService, Platform::runLater);
         PersonListView listView = new PersonListView(listViewModel);
         listViewModel.setOpenPerson((person -> {
             PersonViewModel viewModel = new PersonViewModel(personService, person, () -> {
                 listViewModel.refresh();
                 root.setCenter(listView);
-            });
+            }, Platform::runLater);
             PersonView view = new PersonView(viewModel);
             root.setCenter(view);
         }));
