@@ -11,29 +11,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-/**
- * The View in MVVM.
- *
- * Notice what is NOT here:
- *   - No business logic.
- *   - No "if first name empty then disable button" code.
- *   - No manual reading of TextField text to build a Person.
- *
- * The View only:
- *   1. Creates Nodes.
- *   2. Binds them to the ViewModel's Properties (two-way for inputs).
- *   3. Routes user gestures to ViewModel commands.
- *
- * Swap the ViewModel and this View still works. Test the ViewModel and you
- * have tested the logic without ever starting a JavaFX stage.
- */
+import java.util.List;
+
 public class PersonListView extends VBox {
 
     private TableView<Person> tableView;
 
-    Button create;
-    Button open;
-    Button delete;
+    private Button open;
+    private Button delete;
 
     public PersonListView(PersonListViewModel viewModel) {
         createView(viewModel);
@@ -52,9 +37,9 @@ public class PersonListView extends VBox {
         TableColumn<Person, String> email = new TableColumn<>("E-mail");
         email.setCellValueFactory(new PropertyValueFactory<>("email"));
         email.setPrefWidth(218);
-        tableView.getColumns().addAll(firstName, lastName, email);
+        tableView.getColumns().addAll(List.of(firstName, lastName, email));
 
-        create = new Button("Create");
+        Button create = new Button("Create");
         create.setOnAction(e -> viewModel.create());
         open = new Button("Open");
         open.setOnAction(e -> viewModel.open(tableView.getSelectionModel().getSelectedItem()));

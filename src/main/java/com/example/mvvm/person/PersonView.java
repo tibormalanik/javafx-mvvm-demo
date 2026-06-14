@@ -11,17 +11,17 @@ import javafx.scene.layout.VBox;
 
 /**
  * The View in MVVM.
- *
+ * <p/>
  * Notice what is NOT here:
  *   - No business logic.
  *   - No "if first name empty then disable button" code.
  *   - No manual reading of TextField text to build a Person.
- *
+ * <p/>
  * The View only:
  *   1. Creates Nodes.
  *   2. Binds them to the ViewModel's Properties (two-way for inputs).
  *   3. Routes user gestures to ViewModel commands.
- *
+ * <p/>
  * Swap the ViewModel and this View still works. Test the ViewModel and you
  * have tested the logic without ever starting a JavaFX stage.
  */
@@ -53,7 +53,7 @@ public class PersonView extends VBox {
 
         // live validation text
         Label status = new Label();
-        status.textProperty().bind(viewModel.statusProperty());
+        status.textProperty().bind(viewModel.validationMessageProperty());
         status.setStyle("-fx-text-fill: red");
 
         Button save = new Button("Save");

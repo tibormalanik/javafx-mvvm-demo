@@ -8,21 +8,6 @@ import javafx.collections.FXCollections;
 
 import java.util.function.Consumer;
 
-/**
- * The ViewModel: the heart of MVVM.
- * <p>
- * Responsibilities:
- * - Expose UI state as observable JavaFX Properties (no Nodes here!).
- * - Expose derived/computed state via bindings (fullName, validation).
- * - Expose commands (save, reset) the View can call without knowing how.
- * <p>
- * What it must NOT do:
- * - import javafx.scene.* (no TextField, no Button, no Stage).
- * - This is exactly what makes the ViewModel unit-testable WITHOUT a UI.
- * <p>
- * The View observes these properties; it never pushes values into the model
- * by hand. Binding does the wiring once, declaratively.
- */
 public class PersonListViewModel {
 
     private final PersonService service;

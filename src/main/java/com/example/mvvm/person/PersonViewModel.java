@@ -14,15 +14,15 @@ import java.util.regex.Pattern;
  * The ViewModel: the heart of MVVM.
  * <p>
  * Responsibilities:
- * - Expose UI state as observable JavaFX Properties (no Nodes here!).
- * - Expose derived/computed state via bindings (fullName, validation).
+ * - Expose UI state as observable JavaFX Properties (no Nodes here).
+ * - Expose derived/computed state via bindings (saveDisabled, status).
  * - Expose commands (save, reset) the View can call without knowing how.
  * <p>
  * What it must NOT do:
  * - import javafx.scene.* (no TextField, no Button, no Stage).
  * - This is exactly what makes the ViewModel unit-testable WITHOUT a UI.
  * <p>
- * The View observes these properties; it never pushes values into the model
+ * The View observes bound properties; it never pushes values into the model
  * by hand. Binding does the wiring once, declaratively.
  */
 public class PersonViewModel {
@@ -31,13 +31,13 @@ public class PersonViewModel {
 
     private final PersonService service;
 
-    // --- Editable state, exposed as Properties to view ---
+    // --- editable state, exposed as Properties to view ---
     private final StringProperty firstName = new SimpleStringProperty("");
     private final StringProperty lastName = new SimpleStringProperty("");
     private final StringProperty email = new SimpleStringProperty("");
 
-    // --- Derived state (read-only for the View) ---
-    private final StringProperty status = new SimpleStringProperty("");
+    // --- derived state (read-only for the View) ---
+    private final StringProperty validationMessage = new SimpleStringProperty("");
     private final BooleanProperty saveDisabled = new SimpleBooleanProperty(true);
 
     private final Person personToEdit;
@@ -50,14 +50,52 @@ public class PersonViewModel {
         this.onLeave = onLeave;
 
         // save is disabled unless the form is valid.
-        saveDisabled.bind(Bindings.createBooleanBinding(() -> validationMessage() != null, firstName, lastName, email));
-
-        status.bind(Bindings.createStringBinding(this::validationMessage, firstName, lastName, email));
+        validationMessage.bind(Bindings.createStringBinding(this::validate, firstName, lastName, email));
+        saveDisabled.bind(validationMessage.isNotEmpty());
 
         fill();
     }
 
-    private String validationMessage() {
+    // --- commands the view invokes
+    public void save() {
+        if (validate() != null) {
+            return;
+        }
+        service.save(new Person(
+                personToEdit != null ? personToEdit.getUid() : null,
+                firstName.get().trim(),
+                lastName.get().trim(),
+                email.get() != null ? email.get().trim() : null)
+        );
+        onLeave.run();
+    }
+
+    public void cancel() {
+        onLeave.run();
+    }
+
+    // --- property accessors the View binds to ---
+    public StringProperty firstNameProperty() {
+        return firstName;
+    }
+
+    public StringProperty lastNameProperty() {
+        return lastName;
+    }
+
+    public StringProperty emailProperty() {
+        return email;
+    }
+
+    public StringProperty validationMessageProperty() {
+        return validationMessage;
+    }
+
+    public BooleanProperty saveDisabledProperty() {
+        return saveDisabled;
+    }
+
+    private String validate() {
         if (firstName.get().trim().isEmpty()){
             return "First name is required";
         }
@@ -80,44 +118,6 @@ public class PersonViewModel {
             lastName.set("");
             email.set("");
         }
-    }
-
-    public void save() {
-        if (validationMessage() != null) {
-            return;
-        }
-        service.save(new Person(
-                personToEdit != null ? personToEdit.getUid() : null,
-                firstName.get().trim(),
-                lastName.get().trim(),
-                email.get() != null ? email.get().trim() : null)
-        );
-        onLeave.run();
-    }
-
-    public void cancel() {
-        onLeave.run();
-    }
-
-    // --- Property accessors the View binds to ---
-    public StringProperty firstNameProperty() {
-        return firstName;
-    }
-
-    public StringProperty lastNameProperty() {
-        return lastName;
-    }
-
-    public StringProperty emailProperty() {
-        return email;
-    }
-
-    public StringProperty statusProperty() {
-        return status;
-    }
-
-    public BooleanProperty saveDisabledProperty() {
-        return saveDisabled;
     }
 
 }
