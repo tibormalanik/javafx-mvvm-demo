@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -64,8 +65,15 @@ public class PersonView extends VBox {
         HBox buttons = new HBox(10, save, cancel);
         buttons.setAlignment(Pos.CENTER_LEFT);
 
+        // Indeterminate progress bar shown only while the ViewModel is busy
+        // (i.e. the service runs on a background thread). Pure binding, no logic.
+        ProgressBar progress = new ProgressBar();
+        progress.setMaxWidth(Double.MAX_VALUE);
+        progress.visibleProperty().bind(viewModel.busyProperty());
+        progress.managedProperty().bind(viewModel.busyProperty());
+
         setSpacing(10);
-        getChildren().addAll(form, status, buttons);
+        getChildren().addAll(form, status, buttons, progress);
         setPadding(new Insets(20));
     }
 

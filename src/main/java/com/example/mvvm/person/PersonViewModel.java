@@ -43,6 +43,10 @@ public class PersonViewModel {
     private final StringProperty validationMessage = new SimpleStringProperty("");
     private final BooleanProperty saveDisabled = new SimpleBooleanProperty(true);
 
+    // true while the service call runs on a background thread; the View binds
+    // a ProgressBar's visibility to this and the Save button stays disabled.
+    private final BooleanProperty busy = new SimpleBooleanProperty(false);
+
     private final Person personToEdit;
 
     private final Runnable onLeave;
@@ -53,9 +57,9 @@ public class PersonViewModel {
         this.onLeave = onLeave;
         this.uiExecutor = uiExecutor;
 
-        // save is disabled unless the form is valid.
+        // save is disabled unless the form is valid, OR while a save is running.
         validationMessage.bind(Bindings.createStringBinding(this::validate, firstName, lastName, email));
-        saveDisabled.bind(validationMessage.isNotEmpty());
+        saveDisabled.bind(validationMessage.isNotEmpty().or(busy));
 
         fill();
     }
@@ -65,6 +69,7 @@ public class PersonViewModel {
         if (validate() != null) {
             return CompletableFuture.completedFuture(null);
         }
+        busy.set(true);
         return CompletableFuture.runAsync(() -> {
             service.save(new Person(
                     personToEdit != null ? personToEdit.uid() : null,
@@ -72,7 +77,12 @@ public class PersonViewModel {
                     lastName.get().trim(),
                     email.get() != null ? email.get().trim() : null)
             );
-        }).thenRunAsync(onLeave, uiExecutor);
+        }).whenCompleteAsync((ignored, error) -> {
+            busy.set(false);
+            if (error == null) {
+                onLeave.run();
+            }
+        }, uiExecutor);
     }
 
     public void cancel() {
@@ -98,6 +108,10 @@ public class PersonViewModel {
 
     public BooleanProperty saveDisabledProperty() {
         return saveDisabled;
+    }
+
+    public BooleanProperty busyProperty() {
+        return busy;
     }
 
     private String validate() {
