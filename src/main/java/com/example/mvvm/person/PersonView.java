@@ -4,10 +4,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 /**
@@ -65,15 +66,25 @@ public class PersonView extends VBox {
         HBox buttons = new HBox(10, save, cancel);
         buttons.setAlignment(Pos.CENTER_LEFT);
 
-        // Indeterminate progress bar shown only while the ViewModel is busy
-        // (i.e. the service runs on a background thread). Pure binding, no logic.
-        ProgressBar progress = new ProgressBar();
-        progress.setMaxWidth(Double.MAX_VALUE);
-        progress.visibleProperty().bind(viewModel.busyProperty());
-        progress.managedProperty().bind(viewModel.busyProperty());
+        // The actual form content.
+        VBox content = new VBox(10, form, status, buttons);
+
+        // Glass pane: a semi-transparent overlay with a spinner, shown only
+        // while the ViewModel is busy (service running on a background thread).
+        // Because it sits on top in the StackPane and is visible, it swallows
+        // mouse clicks to the form underneath -> input is disabled, no logic.
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setMaxSize(60, 60);
+        StackPane glassPane = new StackPane(spinner);
+        glassPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.35);");
+        glassPane.visibleProperty().bind(viewModel.busyProperty());
+        glassPane.managedProperty().bind(viewModel.busyProperty());
+
+        // Stack the glass pane on top of the form content.
+        StackPane root = new StackPane(content, glassPane);
 
         setSpacing(10);
-        getChildren().addAll(form, status, buttons, progress);
+        getChildren().add(root);
         setPadding(new Insets(20));
     }
 
