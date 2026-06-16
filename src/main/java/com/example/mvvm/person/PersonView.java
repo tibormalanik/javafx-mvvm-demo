@@ -30,6 +30,7 @@ public class PersonView extends VBox {
     private TextField firstNameField;
     private TextField lastNameField;
     private TextField emailField;
+    private TextField phoneField;
 
     public PersonView(PersonViewModel viewModel) {
         createView(viewModel);
@@ -43,6 +44,8 @@ public class PersonView extends VBox {
         lastNameField.setPromptText("Last name");
         emailField = new TextField();
         emailField.setPromptText("E-mail");
+        phoneField = new TextField();
+        phoneField.setPromptText("Phone (+...)");
 
         GridPane form = new GridPane();
         form.setHgap(10);
@@ -50,6 +53,7 @@ public class PersonView extends VBox {
         form.addRow(0, new Label("First name:"), firstNameField);
         form.addRow(1, new Label("Last name:"),  lastNameField);
         form.addRow(2, new Label("E-mail:"), emailField);
+        form.addRow(3, new Label("Phone:"), phoneField);
 
         // live validation text
         Label status = new Label();
@@ -73,6 +77,7 @@ public class PersonView extends VBox {
         firstNameField.textProperty().bindBidirectional(viewModel.firstNameProperty());
         lastNameField.textProperty().bindBidirectional(viewModel.lastNameProperty());
         emailField.textProperty().bindBidirectional(viewModel.emailProperty());
+        phoneField.textProperty().bindBidirectional(viewModel.phoneProperty());
     }
 
 }

@@ -35,6 +35,7 @@ public class PersonViewModel {
     private final StringProperty firstName = new SimpleStringProperty("");
     private final StringProperty lastName = new SimpleStringProperty("");
     private final StringProperty email = new SimpleStringProperty("");
+    private final StringProperty phone = new SimpleStringProperty("");
 
     // --- derived state (read-only for the View) ---
     private final StringProperty validationMessage = new SimpleStringProperty("");
@@ -50,7 +51,7 @@ public class PersonViewModel {
         this.onLeave = onLeave;
 
         // save is disabled unless the form is valid.
-        validationMessage.bind(Bindings.createStringBinding(this::validate, firstName, lastName, email));
+        validationMessage.bind(Bindings.createStringBinding(this::validate, firstName, lastName, email, phone));
         saveDisabled.bind(validationMessage.isNotEmpty());
 
         fill();
@@ -65,7 +66,8 @@ public class PersonViewModel {
                 personToEdit != null ? personToEdit.getUid() : null,
                 firstName.get().trim(),
                 lastName.get().trim(),
-                email.get() != null ? email.get().trim() : null)
+                email.get() != null ? email.get().trim() : null,
+                phone.get() != null ? phone.get().trim() : null)
         );
         onLeave.run();
     }
@@ -87,6 +89,10 @@ public class PersonViewModel {
         return email;
     }
 
+    public StringProperty phoneProperty() {
+        return phone;
+    }
+
     public StringProperty validationMessageProperty() {
         return validationMessage;
     }
@@ -105,6 +111,9 @@ public class PersonViewModel {
         if (email.get() != null && !email.get().trim().isEmpty() && !EMAIL_PATTERN.matcher(email.get().trim()).matches()) {
             return "E-mail is invalid";
         }
+        if (phone.get() != null && !phone.get().trim().isEmpty() && !phone.get().trim().startsWith("+")) {
+            return "Phone must start with +";
+        }
         return null;
     }
 
@@ -113,10 +122,12 @@ public class PersonViewModel {
             firstName.set(personToEdit.getFirstName());
             lastName.set(personToEdit.getLastName());
             email.set(personToEdit.getEmail());
+            phone.set(personToEdit.getPhone());
         } else {
             firstName.set("");
             lastName.set("");
             email.set("");
+            phone.set("");
         }
     }
 

@@ -12,11 +12,14 @@ public class Person {
 
     private String email;
 
-    public Person(UUID uid, String firstName, String lastName, String email) {
+    private String phone;
+
+    public Person(UUID uid, String firstName, String lastName, String email, String phone) {
         this.uid = uid;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.phone = phone;
     }
 
     public UUID getUid() {
@@ -51,6 +54,14 @@ public class Person {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     @Override
     public String toString() {
         return "Person{" +
@@ -58,6 +69,7 @@ public class Person {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
                 '}';
     }
 }

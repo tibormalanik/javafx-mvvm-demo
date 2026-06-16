@@ -14,8 +14,8 @@ public class PersonService {
     private final List<Person> storage = new ArrayList<>();
 
     public PersonService() {
-        storage.add(new Person(UUID.randomUUID(), "Clark", "Smith", null));
-        storage.add(new Person(UUID.randomUUID(), "Max", "Mustermann", "mm@example.de"));
+        storage.add(new Person(UUID.randomUUID(), "Clark", "Smith", null, null));
+        storage.add(new Person(UUID.randomUUID(), "Max", "Mustermann", "mm@example.de", "+4915123456789"));
     }
 
     public List<Person> loadAll() {

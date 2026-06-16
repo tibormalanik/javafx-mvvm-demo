@@ -37,7 +37,10 @@ public class PersonListView extends VBox {
         TableColumn<Person, String> email = new TableColumn<>("E-mail");
         email.setCellValueFactory(new PropertyValueFactory<>("email"));
         email.setPrefWidth(218);
-        tableView.getColumns().addAll(List.of(firstName, lastName, email));
+        TableColumn<Person, String> phone = new TableColumn<>("Phone");
+        phone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+        phone.setPrefWidth(150);
+        tableView.getColumns().addAll(List.of(firstName, lastName, email, phone));
 
         Button create = new Button("Create");
         create.setOnAction(e -> viewModel.create());
